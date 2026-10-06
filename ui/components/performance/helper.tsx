@@ -17,3 +17,20 @@ export const generateTestName = (name: string, meshName: string): string => {
 export function generateUUID(): string {
   return uuid();
 }
+
+/**
+ * Validates performance test duration string (e.g. "30s", "5m", "2h").
+ * Requires a strictly positive integer followed by 'h', 'm', or 's'.
+ */
+export function isValidDuration(duration: string | null | undefined): boolean {
+  if (!duration || typeof duration !== 'string') {
+    return false;
+  }
+  const trimmed = duration.trim();
+  const match = trimmed.match(/^(\d+)([hms])$/i);
+  if (!match) {
+    return false;
+  }
+  const num = parseInt(match[1], 10);
+  return !isNaN(num) && num > 0;
+}

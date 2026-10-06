@@ -7,7 +7,7 @@ import fetchControlPlanes from '@/graphql/queries/ControlPlanesQuery';
 import { ctxUrl, getK8sClusterIdsFromCtxId } from '../../utils/multi-ctx';
 import { useNotification } from '../../utils/hooks/useNotification';
 import { EVENT_TYPES } from '../../lib/event-types';
-import { generateTestName, generateUUID } from './helper';
+import { generateTestName, generateUUID, isValidDuration } from './helper';
 
 import { Keys } from '@meshery/schemas/permissions';
 import DefaultError from '@/components/general/error-404/index';
@@ -136,6 +136,9 @@ const MesheryPerformanceComponent_ = (props) => {
 
   const handleInputDurationChange = (event, newValue) => {
     setT(newValue);
+    if (newValue !== null) {
+      setTError('');
+    }
   };
 
   const handleSubmit = () => {
@@ -144,29 +147,12 @@ const MesheryPerformanceComponent_ = (props) => {
       return;
     }
 
-    let err = false;
-    let tNum = 0;
-    try {
-      tNum = parseInt(t.substring(0, tState.length - 1));
-    } catch {
-      err = true;
-    }
-
-    if (
-      tState === '' ||
-      tState === null ||
-      !(
-        tState.toLowerCase().endsWith('h') ||
-        tState.toLowerCase().endsWith('m') ||
-        tState.toLowerCase().endsWith('s')
-      ) ||
-      err ||
-      tNum <= 0
-    ) {
+    if (!isValidDuration(tState)) {
       setTError('error-autocomplete-value');
-      closeModal && closeModal();
       return;
     }
+
+    setTError('');
 
     if (!performanceProfileIDState) {
       submitProfile(({ id }) => submitLoadTest(id));

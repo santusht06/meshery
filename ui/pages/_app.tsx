@@ -60,6 +60,7 @@ import {
   getControllerPollConnectionIDsFromContextIds,
   getK8sConfigIdsFromK8sConfig,
 } from '../utils/multi-ctx';
+import { loadStoredOrganization, loadStoredKeys } from '../utils/session';
 import './../public/static/style/index.css';
 import './styles/AnimatedFilter.css';
 import './styles/AnimatedMeshery.css';
@@ -396,14 +397,16 @@ const MesheryApp = ({ Component, pageProps, relayEnvironment, emotionCache }) =>
 
   const loadAbility = useCallback(
     async (orgID, reFetchKeys) => {
-      const storedKeys = sessionStorage.getItem('keys');
-      if (storedKeys !== null && !reFetchKeys && storedKeys !== 'undefined') {
-        setState((prevState) => ({ ...prevState, keys: JSON.parse(storedKeys) }));
+      const validKeys = loadStoredKeys();
+
+      if (validKeys && !reFetchKeys) {
+        setState((prevState) => ({ ...prevState, keys: validKeys }));
+        dispatch(setKeys({ keys: validKeys }));
         updateAbility();
       } else {
         try {
           const result = await fetchUserKeys({ orgId: orgID }).unwrap();
-          if (result) {
+          if (result?.keys) {
             setState((prevState) => ({ ...prevState, keys: result.keys }));
             dispatch(setKeys({ keys: result.keys }));
             updateAbility();
@@ -417,33 +420,35 @@ const MesheryApp = ({ Component, pageProps, relayEnvironment, emotionCache }) =>
   );
 
   const loadOrg = useCallback(async () => {
-    const currentOrg = sessionStorage.getItem('currentOrg');
     let reFetchKeys = false;
+    const validOrg = loadStoredOrganization();
 
-    if (currentOrg && currentOrg !== 'undefined') {
-      let org = JSON.parse(currentOrg);
-      await loadAbility(org.id, reFetchKeys);
-      setCurrentOrganization(org);
+    if (validOrg) {
+      await loadAbility(validOrg.id, reFetchKeys);
+      setCurrentOrganization(validOrg);
     }
 
     try {
       const result = await fetchOrganizations({}).unwrap();
       let organizationToSet;
-      const sessionOrg = currentOrg ? JSON.parse(currentOrg) : null;
 
-      if (currentOrg) {
-        const indx = result.organizations.findIndex((org) => org.id === sessionOrg.id);
+      if (validOrg && result?.organizations) {
+        const indx = result.organizations.findIndex((org) => org.id === validOrg.id);
         if (indx === -1) {
           organizationToSet = result.organizations[0];
           reFetchKeys = true;
+          if (organizationToSet?.id) {
+            await loadAbility(organizationToSet.id, reFetchKeys);
+            setCurrentOrganization(organizationToSet);
+          }
+        }
+      } else if (result?.organizations?.[0]) {
+        organizationToSet = result.organizations[0];
+        reFetchKeys = true;
+        if (organizationToSet?.id) {
           await loadAbility(organizationToSet.id, reFetchKeys);
           setCurrentOrganization(organizationToSet);
         }
-      } else {
-        organizationToSet = result.organizations[0];
-        reFetchKeys = true;
-        await loadAbility(organizationToSet.id, reFetchKeys);
-        setCurrentOrganization(organizationToSet);
       }
     } catch (err) {
       console.log('There was an error fetching available orgs:', err);

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Head from 'next/head';
 import {
   Button,
   CatalogIcon,
@@ -13,8 +12,9 @@ import {
 import { useGetUserPrefQuery, useUpdateUserPrefMutation } from '@/rtk-query/user';
 import { Adapters, VisualDesignerExtension } from '../components/extensions';
 import DefaultError from '@/components/general/error-404';
+import { MesheryPage } from '@/components/general/MesheryPage';
 import { EVENT_TYPES } from '../lib/event-types';
-import { useNotification, usePageTitle } from '@/utils/hooks';
+import { useNotification } from '@/utils/hooks';
 
 import { Keys } from '@meshery/schemas/permissions';
 import { CardContainer, FrontSideDescription } from '../css/icons.styles';
@@ -588,7 +588,6 @@ export const WrappedDigitalOceanAcademyExtension = DigitalOceanAcademyExtension;
 export const WrappedShapeBuilderExtension = ShapeBuilderExtension;
 
 const Extensions = () => {
-  usePageTitle('Extensions');
   const { notify } = useNotification();
   const hasPermission = useHasPermission(Keys.ExtensibilityViewExtensions);
   const [updateUserPref] = useUpdateUserPrefMutation();
@@ -629,10 +628,7 @@ const Extensions = () => {
   };
 
   return (
-    <>
-      <Head>
-        <title>Extensions | Meshery</title>
-      </Head>
+    <MesheryPage title="Extensions">
       {hasPermission ? (
         <Grid2 container spacing={2} size="grow">
           <VisualDesignerExtension />
@@ -653,7 +649,7 @@ const Extensions = () => {
       ) : (
         <DefaultError permissionKey={Keys.ExtensibilityViewExtensions} />
       )}
-    </>
+    </MesheryPage>
   );
 };
 

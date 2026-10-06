@@ -89,6 +89,7 @@ export const ConnectionStyledMenuItem = styled(MenuItem)({
     maxWidth: 'none !important',
     width: '100%',
     height: '100%',
+    padding: '6px 8px !important',
   },
 });
 
@@ -114,12 +115,12 @@ export const ChipWrapper = styled(Chip)(({ theme }) => ({
 }));
 
 const baseChipStyles = (theme: Theme) => ({
-  minWidth: '142px !important',
+  minWidth: '155px !important',
   maxWidth: 'max-content !important',
   display: 'flex !important',
   justifyContent: 'flex-start !important',
   borderRadius: '3px !important',
-  padding: '6px 8px',
+  padding: '6px 28px 6px 8px',
   '& .MuiChip-label': {
     paddingTop: '3px',
     fontWeight: '400',
